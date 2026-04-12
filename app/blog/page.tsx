@@ -1,23 +1,16 @@
-// /app/blog/page.tsx
-
 import React from 'react'
-// 1. Import the necessary tools and types from your library
-import { client } from '@/lib/sanity.client'
-import { postsQuery } from '@/lib/sanity.queries'
+import { connectDB } from '@/lib/mongodb'
+import PostModel from '@/models/post'
 import { Post } from '@/types'
-import BlogPostPreview from '@/components/BlogPostPreview' // Your custom preview component!
+import BlogPostPreview from '@/components/blog/blog-post-preview'
 
-// 2. Add the revalidate option for Incremental Static Regeneration (ISR)
-// This tells Next.js to re-generate this page in the background at most once every 60 seconds.
-// It ensures your blog list is always fresh without sacrificing the speed of a static site.
 export const revalidate = 60
 
-// 3. Convert the component to an `async` function to enable server-side data fetching
 export default async function BlogPage() {
-  // 4. Fetch the array of blog posts from Sanity
-  // We use the client.fetch method with our predefined query.
-  // We also provide the `Post[]` type to ensure full type safety for our data.
-  const posts: Post[] = await client.fetch(postsQuery)
+  await connectDB()
+
+  const postDocs = await PostModel.find().sort({ publishedAt: -1 }).lean()
+  const posts: Post[] = JSON.parse(JSON.stringify(postDocs))
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -32,11 +25,15 @@ export default async function BlogPage() {
       </header>
 
       <section className="mt-10">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <BlogPostPreview key={post._id} post={post} />
-          ))}
-        </div>
+        {posts.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <BlogPostPreview key={post._id} post={post} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground">No posts yet. Check back soon!</p>
+        )}
       </section>
     </main>
   )

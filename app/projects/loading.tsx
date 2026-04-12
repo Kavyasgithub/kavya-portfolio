@@ -1,9 +1,6 @@
-import React from 'react'
-import { projects } from '@/lib/data'
-import ProjectCard from '@/components/projects/project-card'
+import { CardGridSkeleton } from '@/components/shared/skeleton'
 
-export default function ProjectsPage() {
-
+export default function ProjectsLoading() {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
       <header className="mx-auto max-w-3xl text-center">
@@ -17,15 +14,7 @@ export default function ProjectsPage() {
       </header>
 
       <section className="mt-10">
-        {projects.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
-              <ProjectCard key={project.slug} project={project} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-muted-foreground">No projects yet. Check back soon!</p>
-        )}
+        <CardGridSkeleton count={6} />
       </section>
     </main>
   )

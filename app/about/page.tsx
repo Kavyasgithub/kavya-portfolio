@@ -1,187 +1,186 @@
-// /app/about/page.tsx
-
-import { client } from '@/lib/sanity.client'
-import { personalInfoQuery } from '@/lib/sanity.queries'
+import { connectDB } from '@/lib/mongodb'
+import PersonalInfoModel from '@/models/personal-info'
 import { PersonalInfo } from '@/types'
+import { skills, highlights, experience } from '@/lib/data'
 import Image from 'next/image'
+import { AnimateOnScroll } from '@/components/shared/animate-on-scroll'
+import { Download, MapPin, Briefcase, Calendar } from 'lucide-react'
 
-// This is a powerful Next.js feature called Incremental Static Regeneration (ISR).
-// It tells Next.js to treat this page as static, but to re-generate it in the
-// background at most once every 60 seconds if new requests come in.
-// This provides a super-fast user experience while keeping content fresh.
 export const revalidate = 60
 
-/**
- * The AboutPage component fetches and displays detailed personal information.
- * It leverages React Server Components for efficient, server-side data fetching.
- */
 export default async function AboutPage() {
-  // We fetch the personalInfo data using the same query as the homepage.
-  // This demonstrates the reusability of our centralized query library.
-  // The <PersonalInfo> generic ensures our data is fully typed.
-  const personalInfo: PersonalInfo = await client.fetch(personalInfoQuery)
+  await connectDB()
 
-  const skills = [
-    'Full Stack Development',
-    'System Architecture',
-    'API Integration',
-    'Database Management',
-    'Front-end Development',
-    'Back-end Development',
-    'Problem Solving',
-    'Collaboration'
-  ]
-
-  const highlights = [
-    {
-      icon: '💼',
-      title: 'Professional',
-      description: 'Dedicated to delivering high-quality solutions'
-    },
-    {
-      icon: '🚀',
-      title: 'Innovative',
-      description: 'Continuously learning and adapting to new technologies'
-    },
-    {
-      icon: '🎯',
-      title: 'Results-Driven',
-      description: 'Focus on creating impactful digital experiences'
-    }
-  ]
+  const personalInfoDoc = await PersonalInfoModel.findOne().lean()
+  const personalInfo: PersonalInfo | null = personalInfoDoc
+    ? JSON.parse(JSON.stringify(personalInfoDoc))
+    : null
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0">
-        <Image
-          src="/professional-photo.jpg"
-          alt="Professional Background"
-          fill
-          className="object-cover object-center opacity-20 dark:opacity-10"
-          priority
-        />
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/85"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent"></div>
+      {/* Background */}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-15" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,var(--background)_100%)]" />
+
+      {/* Floating blurs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float-delayed" />
       </div>
 
-      {/* Floating Geometric Shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float-delayed"></div>
-      </div>
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        {/* Hero */}
+        <div className="flex flex-col items-center text-center mb-20 pt-10">
+          <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-medium text-primary backdrop-blur-sm">
+            About Me
+          </span>
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-        {/* Hero Section */}
-        <div className="flex flex-col items-center justify-center text-center mb-16 min-h-[60vh]">
-          {/* Header Content */}
-          <div className="space-y-6 max-w-4xl">
-            <div className="inline-block">
-              <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium animate-fade-in backdrop-blur-sm">
-                About Me
-              </span>
-            </div>
-            
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight animate-slide-up">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">
-                Crafting Digital
-              </span>
-              <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-gradient-x">
-                Experiences
-              </span>
-            </h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            <span className="text-foreground">Crafting Digital</span>
+            <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+              Experiences
+            </span>
+          </h1>
 
-            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed animate-fade-in-delay max-w-3xl mx-auto">
-              A passionate developer dedicated to building scalable, efficient, and user-friendly web applications that make a difference.
-            </p>
+          <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-8">
+            A passionate developer dedicated to building scalable, efficient, and user-friendly web applications that make a difference.
+          </p>
 
-            {/* Floating badge */}
-            <div className="inline-block bg-primary text-primary-foreground px-6 py-3 rounded-xl shadow-lg backdrop-blur-sm">
-              <p className="font-semibold">Full Stack Developer</p>
-            </div>
-
-            {/* Quick highlights */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 max-w-3xl mx-auto">
-              {highlights.map((highlight, index) => (
-                <div 
-                  key={index}
-                  className="text-center p-6 rounded-xl bg-card/80 border border-border/50 backdrop-blur-md hover:bg-card hover:scale-105 transition-all duration-300 shadow-lg"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="text-4xl mb-2">{highlight.icon}</div>
-                  <p className="text-sm font-semibold mb-1">{highlight.title}</p>
-                  <p className="text-xs text-muted-foreground">{highlight.description}</p>
-                </div>
-              ))}
-            </div>
+          {/* Quick highlights */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl w-full">
+            {highlights.map((highlight, index) => (
+              <div
+                key={index}
+                className="p-6 rounded-xl border border-border bg-card/80 backdrop-blur-sm hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-300 hover:shadow-lg"
+              >
+                <div className="text-3xl mb-3">{highlight.icon}</div>
+                <p className="text-sm font-semibold mb-1">{highlight.title}</p>
+                <p className="text-xs text-muted-foreground">{highlight.description}</p>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Bio Section */}
-        <section className="mb-16">
-          <div className="relative rounded-3xl border border-border/50 bg-card/80 backdrop-blur-md p-8 sm:p-12 shadow-xl overflow-hidden group hover:shadow-2xl transition-shadow duration-500">
-            {/* Decorative corner accent */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl transform translate-x-32 -translate-y-32 group-hover:translate-x-24 group-hover:-translate-y-24 transition-transform duration-700"></div>
-            
-            <div className="relative z-10">
-              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                <span className="w-2 h-8 bg-primary rounded-full"></span>
-                My Journey
-              </h2>
-              <div className="prose prose-neutral max-w-none dark:prose-invert prose-lg">
-                <p className="text-foreground/90 leading-relaxed whitespace-pre-line">
+        <AnimateOnScroll animation="fade-up">
+          <section className="mb-20">
+            <div className="grid gap-8 lg:grid-cols-5">
+              {/* Photo */}
+              <div className="lg:col-span-2 flex justify-center">
+                <div className="relative">
+                  <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 blur-xl" />
+                  <div className="relative h-80 w-72 overflow-hidden rounded-2xl border-2 border-primary/20 shadow-xl sm:h-96 sm:w-80">
+                    <Image
+                      src="/profile.jpg"
+                      alt="Kavya Sharma"
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Bio text */}
+              <div className="lg:col-span-3 flex flex-col justify-center">
+                <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                  <span className="h-8 w-1 rounded-full bg-primary" />
+                  My Journey
+                </h2>
+                <p className="text-foreground/85 leading-relaxed text-base">
                   {personalInfo?.bio ||
                     'I am a dedicated Full Stack Developer with expertise in designing, developing, and deploying scalable web applications. My technical background covers both front-end and back-end development, allowing me to deliver complete and efficient solutions. I focus on writing clean, maintainable code and building applications that are both high-performing and user-friendly. With a strong understanding of system architecture, API integration, and database management, I am well-equipped to contribute to complex development projects. I am continuously expanding my skill set and enjoy working in dynamic, collaborative environments where I can apply problem-solving abilities to create impactful digital solutions.'}
                 </p>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </AnimateOnScroll>
+
+        {/* Experience Timeline */}
+        <AnimateOnScroll animation="fade-up">
+          <section className="mb-20">
+            <h2 className="text-2xl font-bold mb-10 text-center flex items-center justify-center gap-3">
+              <Briefcase className="h-6 w-6 text-primary" />
+              Work Experience
+            </h2>
+
+            <div className="relative mx-auto max-w-3xl">
+              {/* Vertical line */}
+              <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/20 to-transparent sm:left-8" />
+
+              {experience.map((entry, index) => (
+                <div key={entry.company} className="relative mb-10 last:mb-0 pl-16 sm:pl-20">
+                  {/* Dot */}
+                  <div className="absolute left-6 top-1 z-10 -translate-x-1/2 sm:left-8">
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary bg-background">
+                      <div className="h-2 w-2 rounded-full bg-primary" />
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                        <Calendar className="h-3 w-3" />
+                        {entry.period}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3" />
+                        {entry.location}
+                      </span>
+                    </div>
+                    <h3 className="text-base font-bold">{entry.title}</h3>
+                    <p className="text-sm font-medium text-primary/80">{entry.company}</p>
+                    <ul className="mt-3 space-y-2">
+                      {entry.bullets.map((bullet, i) => (
+                        <li key={i} className="flex gap-2 text-sm text-muted-foreground leading-relaxed">
+                          <span className="mt-2 h-1 w-1 flex-shrink-0 rounded-full bg-primary/50" />
+                          <span>{bullet}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </AnimateOnScroll>
 
         {/* Skills Grid */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">
-            Core Competencies
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {skills.map((skill, index) => (
-              <div
-                key={index}
-                className="group relative p-6 rounded-xl border border-border/50 bg-card/80 backdrop-blur-md hover:bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-accent/5 rounded-xl transition-all duration-300"></div>
-                <p className="relative text-center font-medium text-sm group-hover:text-primary transition-colors duration-300">
-                  {skill}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Call to Action */}
-        <section className="text-center">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">  
-            <div className="inline-block relative">
-              <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full"></div>
-              <a 
-                href="/cv.pdf" 
-                download="CV.pdf"
-                className="relative flex items-center gap-2 bg-card/80 backdrop-blur-md border-2 border-primary/50 text-foreground px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:border-primary transform hover:scale-105 transition-all duration-300"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Download CV
-              </a>
+        <AnimateOnScroll animation="fade-up">
+          <section className="mb-20">
+            <h2 className="text-2xl font-bold mb-8 text-center">
+              Core Competencies
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {skills.map((skill, index) => (
+                <div
+                  key={index}
+                  className="group p-5 rounded-xl border border-border bg-card hover:border-primary/40 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+                >
+                  <p className="text-center text-sm font-medium group-hover:text-primary transition-colors">
+                    {skill}
+                  </p>
+                </div>
+              ))}
             </div>
-          </div>
-        </section>
-       </div>
+          </section>
+        </AnimateOnScroll>
+
+        {/* CTA */}
+        <AnimateOnScroll animation="fade-up">
+          <section className="text-center pb-10">
+            <a
+              href="/KAVYA_RESUME.pdf"
+              download="KAVYA_RESUME.pdf"
+              className="inline-flex items-center gap-3 rounded-xl border-2 border-primary/50 bg-card px-8 py-4 font-semibold shadow-lg transition-all duration-300 hover:border-primary hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5"
+            >
+              <Download className="h-5 w-5 text-primary" />
+              Download CV
+            </a>
+          </section>
+        </AnimateOnScroll>
+      </div>
     </main>
   )
 }
