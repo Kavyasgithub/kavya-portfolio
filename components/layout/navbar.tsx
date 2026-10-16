@@ -5,23 +5,26 @@ import { usePathname } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
-import { Terminal, Menu, X } from 'lucide-react'
+import { Terminal, Menu, X, Download } from 'lucide-react'
+import { profile } from '@/lib/data'
 
 const navLinks = [
   { href: '/', label: 'home' },
   { href: '/about', label: 'about' },
   { href: '/projects', label: 'projects' },
-  { href: '/blog', label: 'blog' },
+  { href: '/#contact', label: 'contact' },
 ]
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
+  const [lastPathname, setLastPathname] = useState(pathname)
 
-  // Close mobile menu on route change
-  useEffect(() => {
+  // Close mobile menu on route change (incl. back/forward); link clicks close it directly
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname)
     setMobileOpen(false)
-  }, [pathname])
+  }
 
   // Prevent body scroll when menu is open
   useEffect(() => {
@@ -38,7 +41,7 @@ const Navbar = () => {
             className="flex items-center gap-2 font-mono text-base font-semibold tracking-tight transition-colors hover:text-primary"
           >
             <Terminal className="h-5 w-5 text-primary" />
-            <span className="hidden sm:inline">~/portfolio</span>
+            <span className="hidden sm:inline">~/kavya-sharma</span>
           </Link>
 
           {/* Desktop nav */}
@@ -62,6 +65,12 @@ const Navbar = () => {
               ))}
             </ul>
             <div className="ml-2 flex items-center gap-2">
+              <Button asChild variant="outline" size="sm" className="gap-1.5 font-mono">
+                <a href={profile.resumeUrl} download={profile.resumeFileName}>
+                  <Download className="h-3.5 w-3.5" />
+                  cv
+                </a>
+              </Button>
               <div className="border-l border-border pl-2">
                 <ThemeToggle />
               </div>
@@ -100,6 +109,7 @@ const Navbar = () => {
                   <li key={link.href}>
                     <Link
                       href={link.href}
+                      onClick={() => setMobileOpen(false)}
                       className={`flex items-center gap-3 rounded-lg px-4 py-3 font-mono text-base transition-colors ${
                         pathname === link.href
                           ? 'bg-primary/10 text-primary'
@@ -114,8 +124,8 @@ const Navbar = () => {
               </ul>
               <div className="mt-4 border-t border-border pt-4">
                 <a
-                  href="/KAVYA_RESUME.pdf"
-                  download="KAVYA_RESUME.pdf"
+                  href={profile.resumeUrl}
+                  download={profile.resumeFileName}
                   className="flex items-center gap-3 rounded-lg px-4 py-3 font-mono text-base text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
                   <span className="text-primary">$</span>

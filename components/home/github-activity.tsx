@@ -1,7 +1,5 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { Flame, TrendingUp, GitCommit } from 'lucide-react'
+import { Github, ArrowUpRight } from 'lucide-react'
+import { profile } from '@/lib/data'
 
 interface ContributionDay {
   date: string
@@ -9,48 +7,44 @@ interface ContributionDay {
   level: 0 | 1 | 2 | 3 | 4
 }
 
-function generateMockContributions(): ContributionDay[] {
-  const contributions: ContributionDay[] = []
-  const today = new Date()
-
-  for (let i = 364; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
-    const count = Math.floor(Math.random() * 10)
-    const level = (count === 0 ? 0 : Math.min(Math.floor(count / 2) + 1, 4)) as 0 | 1 | 2 | 3 | 4
-
-    contributions.push({
-      date: date.toISOString().split('T')[0],
-      count,
-      level,
-    })
-  }
-
-  return contributions
+interface ContributionsResponse {
+  total: { lastYear: number }
+  contributions: ContributionDay[]
 }
 
 const levelColors = {
-  0: 'bg-muted hover:bg-muted/80',
-  1: 'bg-primary/25 hover:bg-primary/35',
-  2: 'bg-primary/45 hover:bg-primary/55',
-  3: 'bg-primary/70 hover:bg-primary/80',
-  4: 'bg-primary hover:bg-primary/90',
+  0: 'bg-foreground/10',
+  1: 'bg-primary/25',
+  2: 'bg-primary/45',
+  3: 'bg-primary/70',
+  4: 'bg-primary',
 }
 
-export function GitHubActivity() {
-  const [contributions, setContributions] = useState<ContributionDay[]>([])
-  const [hoveredDay, setHoveredDay] = useState<ContributionDay | null>(null)
+const profileUrl = `https://github.com/${profile.githubUsername}`
 
-  useEffect(() => {
-    setContributions(generateMockContributions())
-  }, [])
+// Public mirror of GitHub's contribution calendar; no token required.
+async function getContributions(): Promise<ContributionsResponse | null> {
+  try {
+    const res = await fetch(
+      `https://github-contributions-api.jogruber.de/v4/${profile.githubUsername}?y=last`,
+      { next: { revalidate: 60 * 60 * 12 } }
+    )
+    if (!res.ok) return null
+    return (await res.json()) as ContributionsResponse
+  } catch {
+    return null
+  }
+}
+
+export async function GitHubActivity() {
+  const data = await getContributions()
 
   const weeks: ContributionDay[][] = []
-  for (let i = 0; i < contributions.length; i += 7) {
-    weeks.push(contributions.slice(i, i + 7))
+  if (data) {
+    for (let i = 0; i < data.contributions.length; i += 7) {
+      weeks.push(data.contributions.slice(i, i + 7))
+    }
   }
-
-  const totalContributions = contributions.reduce((sum, day) => sum + day.count, 0)
 
   return (
     <section className="w-full py-20">
@@ -61,72 +55,53 @@ export function GitHubActivity() {
           <span className="text-primary">{' />'}</span>
         </h2>
         <p className="text-muted-foreground">
-          {totalContributions} contributions in the last year
+          {data ? `${data.total.lastYear} contributions in the last year` : 'Open source and side projects'}
         </p>
       </div>
 
-      {/* Stats cards */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
-        {[
-          { label: 'Total Contributions', value: totalContributions, icon: GitCommit, color: 'from-blue-500/10 to-cyan-500/10 border-blue-500/20' },
-          { label: 'Current Streak', value: '42 days', icon: Flame, color: 'from-orange-500/10 to-red-500/10 border-orange-500/20' },
-          { label: 'Longest Streak', value: '127 days', icon: TrendingUp, color: 'from-green-500/10 to-emerald-500/10 border-green-500/20' },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className={`group relative overflow-hidden rounded-xl border bg-gradient-to-br p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${stat.color}`}
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <a
+            href={profileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 font-mono text-sm text-muted-foreground transition-colors hover:text-primary"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                <p className="mt-2 text-3xl font-bold text-foreground">{stat.value}</p>
-              </div>
-              <stat.icon className="h-8 w-8 text-muted-foreground/30 transition-colors group-hover:text-primary/40" />
+            <Github className="h-4 w-4" />
+            github.com/{profile.githubUsername}
+            <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </a>
+          {data && (
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-muted-foreground">Less</span>
+              {([0, 1, 2, 3, 4] as const).map((level) => (
+                <div key={level} className={`h-3 w-3 rounded-sm ${levelColors[level]}`} />
+              ))}
+              <span className="text-muted-foreground">More</span>
+            </div>
+          )}
+        </div>
+
+        {data ? (
+          <div className="overflow-x-auto pb-2">
+            <div className="inline-flex gap-[3px]">
+              {weeks.map((week) => (
+                <div key={week[0].date} className="flex flex-col gap-[3px]">
+                  {week.map((day) => (
+                    <div
+                      key={day.date}
+                      className={`h-[13px] w-[13px] rounded-[3px] ${levelColors[day.level]}`}
+                      title={`${day.count} ${day.count === 1 ? 'contribution' : 'contributions'} on ${day.date}`}
+                    />
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Contribution graph */}
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <div className="mb-4 flex items-center justify-end gap-2 text-xs">
-          <span className="text-muted-foreground">Less</span>
-          {[0, 1, 2, 3, 4].map((level) => (
-            <div
-              key={level}
-              className={`h-3 w-3 rounded-sm ${levelColors[level as keyof typeof levelColors]}`}
-            />
-          ))}
-          <span className="text-muted-foreground">More</span>
-        </div>
-
-        <div className="relative overflow-x-auto pb-2">
-          <div className="inline-flex gap-[3px]">
-            {weeks.map((week, weekIndex) => (
-              <div key={weekIndex} className="flex flex-col gap-[3px]">
-                {week.map((day) => (
-                  <div
-                    key={day.date}
-                    className={`h-[13px] w-[13px] rounded-[3px] transition-all duration-200 cursor-pointer ${
-                      levelColors[day.level]
-                    } ${hoveredDay?.date === day.date ? 'ring-2 ring-primary ring-offset-1 ring-offset-background scale-125' : ''}`}
-                    onMouseEnter={() => setHoveredDay(day)}
-                    onMouseLeave={() => setHoveredDay(null)}
-                    title={`${day.count} contributions on ${day.date}`}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {hoveredDay && (
-          <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border bg-popover px-3 py-2 text-sm shadow-sm">
-            <span className="font-semibold text-foreground">
-              {hoveredDay.count} {hoveredDay.count === 1 ? 'contribution' : 'contributions'}
-            </span>
-            <span className="text-muted-foreground">on {hoveredDay.date}</span>
-          </div>
+        ) : (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            Contribution graph is unavailable right now. See the full activity on GitHub.
+          </p>
         )}
       </div>
     </section>

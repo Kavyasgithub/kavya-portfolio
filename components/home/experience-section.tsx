@@ -3,7 +3,7 @@ import { Briefcase, MapPin, Calendar } from 'lucide-react'
 
 export function ExperienceSection() {
   return (
-    <section className="py-20">
+    <section id="experience" className="scroll-mt-20 py-20">
       <div className="mb-16 text-center">
         <h2 className="mb-4 font-mono text-3xl font-bold">
           <span className="text-primary">{'<'}</span>
@@ -11,7 +11,7 @@ export function ExperienceSection() {
           <span className="text-primary">{' />'}</span>
         </h2>
         <p className="text-muted-foreground">
-          Professional journey and internships
+          Where I&apos;ve been building
         </p>
       </div>
 
@@ -47,10 +47,21 @@ export function ExperienceSection() {
                   <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
 
                   <div className="p-6">
-                    {/* Period badge */}
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                      <Calendar className="h-3 w-3" />
-                      {entry.period}
+                    {/* Period & type badges */}
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+                        <Calendar className="h-3 w-3" />
+                        {entry.period}
+                      </span>
+                      <span className="rounded-full border border-border px-3 py-1.5 font-mono text-[11px] text-muted-foreground">
+                        {entry.employmentType}
+                      </span>
+                      {entry.current && (
+                        <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-green-500">
+                          <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                          Current
+                        </span>
+                      )}
                     </div>
 
                     {/* Title & Company */}
@@ -74,6 +85,17 @@ export function ExperienceSection() {
                         </li>
                       ))}
                     </ul>
+
+                    <div className="mt-5 flex flex-wrap gap-1.5 border-t border-border pt-4">
+                      {entry.stack.map((tech) => (
+                        <span
+                          key={tech}
+                          className="rounded-md border border-border bg-muted/50 px-2 py-0.5 font-mono text-[11px] text-muted-foreground"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

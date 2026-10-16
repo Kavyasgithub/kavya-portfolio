@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kavya Sharma: Portfolio
 
-## Getting Started
+Personal portfolio built with Next.js 16 (App Router), React 19, TypeScript and Tailwind CSS v4. Every page is statically generated; there is no database.
 
-First, run the development server:
+## Structure
+
+| Path | What it is |
+| --- | --- |
+| `lib/data.ts` | **All site content**: profile, experience, projects, skills, education, certifications. Edit this to update the site. |
+| `app/page.tsx` | Home: hero, featured work, experience, skills, GitHub activity, contact |
+| `app/about/page.tsx` | About: bio, career summary, education, certifications, leadership |
+| `app/projects/` | Project listing and per-project case study pages |
+| `app/api/contact/route.ts` | Contact form endpoint (emails via Resend) |
+| `public/Kavya_Sharma_Resume.pdf` | Resume served by every "Download CV" button |
+| `public/projects/` | Project cover images |
+
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `RESEND_API_KEY` | Yes, for the contact form | API key from [resend.com](https://resend.com). Without it the form shows a "please email me directly" message instead of sending. |
+| `CONTACT_TO_EMAIL` | No | Inbox that receives messages. Defaults to `profile.email` in `lib/data.ts`. |
+| `CONTACT_FROM_EMAIL` | No | Sender address. Defaults to `onboarding@resend.dev`, which can only deliver to the email that owns the Resend account; set this after verifying your own domain in Resend. |
+| `NEXT_PUBLIC_SITE_URL` | No | Canonical URL for Open Graph previews. On Vercel the production URL is detected automatically. |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Updating content
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Resume:** replace `public/Kavya_Sharma_Resume.pdf` (keep the file name) and update `lib/data.ts` to match.
+- **New project:** add an entry to `projects` in `lib/data.ts` and a 16:9 cover image (1600×900) in `public/projects/`. Set `featured: true` to show it on the home page, and `type: 'Freelance'` for client work.
