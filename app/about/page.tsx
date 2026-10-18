@@ -1,166 +1,198 @@
-import { connectDB } from '@/lib/mongodb'
-import PersonalInfoModel from '@/models/personal-info'
-import { PersonalInfo } from '@/types'
-import { skills, highlights, experience } from '@/lib/data'
+import type { Metadata } from 'next'
 import Image from 'next/image'
+import Link from 'next/link'
+import { profile, experience, education, certifications, achievements, skillGroups } from '@/lib/data'
 import { AnimateOnScroll } from '@/components/shared/animate-on-scroll'
-import { Download, MapPin, Briefcase, Calendar } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Download, MapPin, Briefcase, GraduationCap, Award, Trophy, Mail, ArrowRight } from 'lucide-react'
 
-export const revalidate = 60
+export const metadata: Metadata = {
+  title: 'About',
+  description: `${profile.name}: ${profile.role}. Experience, education, certifications and the stack I work with.`,
+}
 
-export default async function AboutPage() {
-  await connectDB()
+const currentRoles = experience.filter((e) => e.current)
 
-  const personalInfoDoc = await PersonalInfoModel.findOne().lean()
-  const personalInfo: PersonalInfo | null = personalInfoDoc
-    ? JSON.parse(JSON.stringify(personalInfoDoc))
-    : null
+function SectionHeading({ icon: Icon, children }: { icon: typeof Briefcase; children: React.ReactNode }) {
+  return (
+    <h2 className="mb-8 flex items-center gap-3 text-2xl font-bold">
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Icon className="h-5 w-5" />
+      </span>
+      {children}
+    </h2>
+  )
+}
+
+export default function AboutPage() {
+  const facts = [
+    { label: 'role', value: currentRoles.map((r) => (r.company === 'Self-employed' ? r.title : `${r.title} @ ${r.company}`)).join(' · ') },
+    { label: 'location', value: profile.location },
+    { label: 'education', value: 'B.Tech ECE, DCRUST (8.26 CGPA)' },
+    { label: 'focus', value: 'Full stack · APIs · PostgreSQL' },
+    { label: 'email', value: profile.email },
+  ]
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
+    <div className="relative w-full overflow-hidden">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-15" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,var(--background)_100%)]" />
 
-      {/* Floating blurs */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float-delayed" />
-      </div>
-
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-        {/* Hero */}
-        <div className="flex flex-col items-center text-center mb-20 pt-10">
-          <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-medium text-primary backdrop-blur-sm">
-            About Me
-          </span>
-
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-            <span className="text-foreground">Crafting Digital</span>
-            <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-              Experiences
-            </span>
-          </h1>
-
-          <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-8">
-            A passionate developer dedicated to building scalable, efficient, and user-friendly web applications that make a difference.
-          </p>
-
-          {/* Quick highlights */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl w-full">
-            {highlights.map((highlight, index) => (
-              <div
-                key={index}
-                className="p-6 rounded-xl border border-border bg-card/80 backdrop-blur-sm hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-300 hover:shadow-lg"
-              >
-                <div className="text-3xl mb-3">{highlight.icon}</div>
-                <p className="text-sm font-semibold mb-1">{highlight.title}</p>
-                <p className="text-xs text-muted-foreground">{highlight.description}</p>
+        {/* Intro */}
+        <section className="mb-24 grid gap-12 pt-6 lg:grid-cols-5 lg:items-center">
+          <div className="flex justify-center lg:col-span-2">
+            <div className="relative">
+              <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 blur-xl" />
+              <div className="relative h-80 w-72 overflow-hidden rounded-2xl border-2 border-primary/20 shadow-xl sm:h-96 sm:w-80">
+                <Image src="/profile.jpg" alt={profile.name} fill sizes="320px" className="object-cover" priority />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
               </div>
-            ))}
+            </div>
           </div>
-        </div>
 
-        {/* Bio Section */}
+          <div className="lg:col-span-3">
+            <p className="mb-3 font-mono text-sm text-primary">
+              <span className="text-muted-foreground">~/</span>about
+            </p>
+            <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
+              I build software that holds up in production.
+            </h1>
+            <div className="space-y-4 text-base leading-relaxed text-foreground/85">
+              {profile.bio.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Quick facts */}
         <AnimateOnScroll animation="fade-up">
-          <section className="mb-20">
-            <div className="grid gap-8 lg:grid-cols-5">
-              {/* Photo */}
-              <div className="lg:col-span-2 flex justify-center">
-                <div className="relative">
-                  <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 blur-xl" />
-                  <div className="relative h-80 w-72 overflow-hidden rounded-2xl border-2 border-primary/20 shadow-xl sm:h-96 sm:w-80">
-                    <Image
-                      src="/profile.jpg"
-                      alt="Kavya Sharma"
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
-                  </div>
-                </div>
+          <section className="mb-24">
+            <div className="terminal-window overflow-hidden">
+              <div className="terminal-header">
+                <span className="terminal-dot dot-red" />
+                <span className="terminal-dot dot-yellow" />
+                <span className="terminal-dot dot-green" />
+                <span className="ml-2 font-mono text-xs text-muted-foreground">kavya.json</span>
               </div>
+              <pre className="overflow-x-auto p-5 font-mono text-sm leading-7 sm:p-6">
+                <span className="text-muted-foreground">{'{'}</span>
+                {facts.map((fact, i) => (
+                  <span key={fact.label} className="block pl-4 sm:pl-6">
+                    <span className="text-[#0451a5] dark:text-[#9cdcfe]">&quot;{fact.label}&quot;</span>
+                    <span className="text-muted-foreground">: </span>
+                    <span className="text-[#a31515] dark:text-[#ce9178]">&quot;{fact.value}&quot;</span>
+                    {i < facts.length - 1 && <span className="text-muted-foreground">,</span>}
+                  </span>
+                ))}
+                <span className="text-muted-foreground">{'}'}</span>
+              </pre>
+            </div>
+          </section>
+        </AnimateOnScroll>
 
-              {/* Bio text */}
-              <div className="lg:col-span-3 flex flex-col justify-center">
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                  <span className="h-8 w-1 rounded-full bg-primary" />
-                  My Journey
-                </h2>
-                <p className="text-foreground/85 leading-relaxed text-base">
-                  {personalInfo?.bio ||
-                    'I am a dedicated Full Stack Developer with expertise in designing, developing, and deploying scalable web applications. My technical background covers both front-end and back-end development, allowing me to deliver complete and efficient solutions. I focus on writing clean, maintainable code and building applications that are both high-performing and user-friendly. With a strong understanding of system architecture, API integration, and database management, I am well-equipped to contribute to complex development projects. I am continuously expanding my skill set and enjoy working in dynamic, collaborative environments where I can apply problem-solving abilities to create impactful digital solutions.'}
-                </p>
+        {/* Career at a glance */}
+        <AnimateOnScroll animation="fade-up">
+          <section className="mb-24">
+            <SectionHeading icon={Briefcase}>Career</SectionHeading>
+            <ol className="relative space-y-6 border-l border-border pl-8">
+              {experience.map((entry) => (
+                <li key={`${entry.company}-${entry.title}`} className="relative">
+                  <span
+                    className={`absolute -left-[37px] top-1.5 h-3 w-3 rounded-full border-2 border-background ${
+                      entry.current ? 'bg-green-500' : 'bg-primary'
+                    }`}
+                  />
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                    <h3 className="font-semibold">
+                      {entry.title}
+                      <span className="font-normal text-muted-foreground"> · {entry.company}</span>
+                    </h3>
+                    <span className="font-mono text-xs text-muted-foreground">{entry.period}</span>
+                  </div>
+                  <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
+                    {entry.location} · {entry.employmentType}
+                  </p>
+                </li>
+              ))}
+            </ol>
+            <Link
+              href="/#experience"
+              className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            >
+              Full experience details
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </section>
+        </AnimateOnScroll>
+
+        {/* Education & Certifications */}
+        <AnimateOnScroll animation="fade-up">
+          <section className="mb-24 grid gap-12 lg:grid-cols-2">
+            <div>
+              <SectionHeading icon={GraduationCap}>Education</SectionHeading>
+              <div className="space-y-4">
+                {education.map((item) => (
+                  <div key={item.institution} className="rounded-xl border border-border bg-card p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="font-semibold leading-snug">{item.institution}</h3>
+                      <span className="shrink-0 font-mono text-xs text-muted-foreground">{item.period}</span>
+                    </div>
+                    <p className="mt-2 text-sm text-foreground/85">{item.degree}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      <span className="font-mono text-primary">{item.detail}</span> · {item.location}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <SectionHeading icon={Award}>Certifications</SectionHeading>
+              <div className="space-y-4">
+                {certifications.map((cert) => (
+                  <div key={cert.name} className="flex items-center gap-4 rounded-xl border border-border bg-card p-5">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 font-mono text-xs font-bold text-primary">
+                      OCI
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{cert.name}</h3>
+                      <p className="text-xs text-muted-foreground">{cert.issuer}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
         </AnimateOnScroll>
 
-        {/* Experience Timeline */}
+        {/* Leadership & Community */}
         <AnimateOnScroll animation="fade-up">
-          <section className="mb-20">
-            <h2 className="text-2xl font-bold mb-10 text-center flex items-center justify-center gap-3">
-              <Briefcase className="h-6 w-6 text-primary" />
-              Work Experience
-            </h2>
-
-            <div className="relative mx-auto max-w-3xl">
-              {/* Vertical line */}
-              <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/20 to-transparent sm:left-8" />
-
-              {experience.map((entry, index) => (
-                <div key={entry.company} className="relative mb-10 last:mb-0 pl-16 sm:pl-20">
-                  {/* Dot */}
-                  <div className="absolute left-6 top-1 z-10 -translate-x-1/2 sm:left-8">
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary bg-background">
-                      <div className="h-2 w-2 rounded-full bg-primary" />
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                        <Calendar className="h-3 w-3" />
-                        {entry.period}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3" />
-                        {entry.location}
-                      </span>
-                    </div>
-                    <h3 className="text-base font-bold">{entry.title}</h3>
-                    <p className="text-sm font-medium text-primary/80">{entry.company}</p>
-                    <ul className="mt-3 space-y-2">
-                      {entry.bullets.map((bullet, i) => (
-                        <li key={i} className="flex gap-2 text-sm text-muted-foreground leading-relaxed">
-                          <span className="mt-2 h-1 w-1 flex-shrink-0 rounded-full bg-primary/50" />
-                          <span>{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+          <section className="mb-24">
+            <SectionHeading icon={Trophy}>Leadership &amp; Community</SectionHeading>
+            <div className="grid gap-4 md:grid-cols-2">
+              {achievements.map((item) => (
+                <div key={item.title} className="rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/30">
+                  <h3 className="font-semibold">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
                 </div>
               ))}
             </div>
           </section>
         </AnimateOnScroll>
 
-        {/* Skills Grid */}
+        {/* Stack summary */}
         <AnimateOnScroll animation="fade-up">
-          <section className="mb-20">
-            <h2 className="text-2xl font-bold mb-8 text-center">
-              Core Competencies
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {skills.map((skill, index) => (
-                <div
-                  key={index}
-                  className="group p-5 rounded-xl border border-border bg-card hover:border-primary/40 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
-                >
-                  <p className="text-center text-sm font-medium group-hover:text-primary transition-colors">
-                    {skill}
-                  </p>
+          <section className="mb-24">
+            <h2 className="mb-6 text-2xl font-bold">Stack</h2>
+            <div className="divide-y divide-border rounded-xl border border-border bg-card">
+              {skillGroups.map((group) => (
+                <div key={group.category} className="grid gap-2 p-4 sm:grid-cols-[180px_1fr] sm:gap-6">
+                  <p className="font-mono text-xs uppercase tracking-wider text-primary">{group.category}</p>
+                  <p className="text-sm text-foreground/85">{group.items.join(' · ')}</p>
                 </div>
               ))}
             </div>
@@ -169,18 +201,25 @@ export default async function AboutPage() {
 
         {/* CTA */}
         <AnimateOnScroll animation="fade-up">
-          <section className="text-center pb-10">
-            <a
-              href="/KAVYA_RESUME.pdf"
-              download="KAVYA_RESUME.pdf"
-              className="inline-flex items-center gap-3 rounded-xl border-2 border-primary/50 bg-card px-8 py-4 font-semibold shadow-lg transition-all duration-300 hover:border-primary hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5"
-            >
-              <Download className="h-5 w-5 text-primary" />
-              Download CV
-            </a>
+          <section className="flex flex-col items-center gap-4 pb-10 text-center">
+            <p className="text-muted-foreground">Want the one-page version?</p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button asChild size="lg" className="gap-2 shadow-lg shadow-primary/20">
+                <a href={profile.resumeUrl} download={profile.resumeFileName}>
+                  <Download className="h-4 w-4" />
+                  Download CV
+                </a>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="gap-2">
+                <Link href="/#contact">
+                  <Mail className="h-4 w-4" />
+                  Get in touch
+                </Link>
+              </Button>
+            </div>
           </section>
         </AnimateOnScroll>
       </div>
-    </main>
+    </div>
   )
 }

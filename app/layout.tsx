@@ -8,13 +8,29 @@ import { ScrollToTop } from '@/components/shared/scroll-to-top'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:3000')
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     template: '%s | Kavya Sharma',
-    default: 'Kavya Sharma - Full-Stack Developer & Creator',
+    default: 'Kavya Sharma | Full Stack Developer',
   },
   description:
-    'Welcome to the portfolio of Kavya Sharma, a passionate full-stack developer specializing in creating modern, high-performance web applications with Next.js, React, and MongoDB.',
+    'Kavya Sharma is a full stack developer building production web applications with React, Next.js, Node.js, Express.js and PostgreSQL. Projects include LedgerX, a double-entry financial ledger, and RGC System, a health membership platform.',
+  openGraph: {
+    title: 'Kavya Sharma | Full Stack Developer',
+    description:
+      'Full stack developer building production web applications with React, Node.js and PostgreSQL.',
+    siteName: 'Kavya Sharma | Portfolio',
+    images: [{ url: '/projects/ledgerx.png', width: 1600, height: 900, alt: 'LedgerX by Kavya Sharma' }],
+    locale: 'en_US',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({

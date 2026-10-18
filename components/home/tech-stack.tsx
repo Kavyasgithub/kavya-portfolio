@@ -1,61 +1,72 @@
-'use client'
+import { Code2, Database, Layout, Server, Sparkles, Wrench } from 'lucide-react'
+import { skillGroups, engineeringPractices, type SkillGroup } from '@/lib/data'
 
-import { Code2, Database, GitBranch, Globe, Layers, Server } from 'lucide-react'
-import { techStack } from '@/lib/data'
-
-const iconMap: Record<string, React.ReactNode> = {
-  Code2: <Code2 className="h-7 w-7" />,
-  Globe: <Globe className="h-7 w-7" />,
-  Server: <Server className="h-7 w-7" />,
-  Database: <Database className="h-7 w-7" />,
-  Layers: <Layers className="h-7 w-7" />,
-  GitBranch: <GitBranch className="h-7 w-7" />,
-}
-
-const categoryColors: Record<string, string> = {
-  Frontend: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30',
-  Backend: 'from-green-500/20 to-emerald-500/20 border-green-500/30',
-  Language: 'from-purple-500/20 to-violet-500/20 border-purple-500/30',
-  Database: 'from-orange-500/20 to-amber-500/20 border-orange-500/30',
-  DevOps: 'from-red-500/20 to-pink-500/20 border-red-500/30',
-  Cloud: 'from-sky-500/20 to-indigo-500/20 border-sky-500/30',
-  Tools: 'from-gray-500/20 to-slate-500/20 border-gray-500/30',
-  AI: 'from-yellow-500/20 to-orange-500/20 border-yellow-500/30',
+const iconMap: Record<SkillGroup['icon'], typeof Code2> = {
+  Code2,
+  Layout,
+  Server,
+  Database,
+  Wrench,
+  Sparkles,
 }
 
 export function TechStack() {
   return (
-    <section className="w-full py-20">
+    <section id="skills" className="w-full scroll-mt-20 py-20">
       <div className="mb-12 text-center">
         <h2 className="mb-4 font-mono text-3xl font-bold">
           <span className="text-primary">{'<'}</span>
-          Tech Stack
+          Skills
           <span className="text-primary">{' />'}</span>
         </h2>
-        <p className="text-muted-foreground">
-          Technologies I work with
-        </p>
+        <p className="text-muted-foreground">The stack I use to ship production software</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
-        {techStack.map((tech) => (
-          <div
-            key={tech.name}
-            className={`group relative flex flex-col items-center justify-center gap-3 rounded-xl border bg-gradient-to-br p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-              categoryColors[tech.category] || 'from-muted/50 to-muted/30 border-border'
-            }`}
-          >
-            <div className="text-foreground/70 transition-all duration-300 group-hover:text-primary group-hover:scale-110">
-              {iconMap[tech.icon]}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {skillGroups.map((group) => {
+          const Icon = iconMap[group.icon]
+          return (
+            <div
+              key={group.category}
+              className="group rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Icon className="h-4 w-4" />
+                </div>
+                <h3 className="font-mono text-sm font-semibold">
+                  <span className="text-muted-foreground">const </span>
+                  {group.category.toLowerCase().replace(/[^a-z]+/g, '_')}
+                </h3>
+                <span className="ml-auto font-mono text-xs text-muted-foreground">{group.items.length}</span>
+              </div>
+              <ul className="flex flex-wrap gap-2">
+                {group.items.map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground/90 transition-colors group-hover:border-primary/20"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold">{tech.name}</p>
-              <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                {tech.category}
-              </p>
-            </div>
-          </div>
-        ))}
+          )
+        })}
+      </div>
+
+      <div className="mt-6 rounded-xl border border-dashed border-border bg-card/40 p-5">
+        <p className="mb-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          <span className="text-primary">#</span> engineering practices
+        </p>
+        <ul className="flex flex-wrap gap-x-6 gap-y-2">
+          {engineeringPractices.map((practice) => (
+            <li key={practice} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+              {practice}
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )
